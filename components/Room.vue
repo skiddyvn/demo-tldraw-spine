@@ -1,7 +1,56 @@
 <template>
   <div class="b-room-stage">
     <div class="b-room-stage-inner">
-      <VocabCard v-if="isOpenModal" @close="isOpenModal = false"></VocabCard>
+      <VocabCard
+        v-if="selectedVocab === 'cat'"
+        @close="selectedVocab = null"
+        @flip-card="syncFlip('cat')"
+        vocab="cat"
+        name="CAT (NOUN)"
+        proun="/cat/"
+        meanvn="CON MÈO"
+        example="I USUALLY KICK THE CAT WITH MY FEET."
+      >
+        <template #image>
+          <img class="img-fluid" src="~/assets/images/cat.jpeg" alt="" />
+        </template>
+      </VocabCard>
+      <VocabCard
+        v-if="selectedVocab === 'tree'"
+        @close="selectedVocab = null"
+        @flip-card="syncFlip('tree')"
+        vocab="tree"
+        name="Tree (NOUN)"
+        proun="/triː/"
+        meanvn="CÁI CÂY"
+        example="I love tree. Tree provides oxygen."
+      >
+        <template #image>
+          <img
+            class="img-fluid"
+            src="https://easydrawingguides.com/wp-content/uploads/2017/02/How-to-draw-a-cartoon-tree-20.png"
+            alt=""
+          />
+        </template>
+      </VocabCard>
+      <VocabCard
+        v-if="selectedVocab === 'table'"
+        @close="selectedVocab = null"
+        @flip-card="syncFlip('table')"
+        vocab="table"
+        name="TABLE (NOUN)"
+        proun="/cat/"
+        meanvn="CÁI BÀN"
+        example="THIS TABLE IS MADE FROM WOOD."
+      >
+        <template #image>
+          <img
+            class="img-fluid"
+            src="https://cdn.pixabay.com/photo/2016/04/01/12/08/table-1300555_960_720.png"
+            alt=""
+          />
+        </template>
+      </VocabCard>
       <div class="card-stage flex-fill">
         <h3 class="b-room-stage-header text-light">
           When did you start practicing your hobby
@@ -17,13 +66,25 @@
             'stage-minimized': !isFullscreen,
           }"
         >
-          <!-- <KeepAlive> -->
-          <component
-            :is="components[tab]"
-            @expand="onExpand"
-            @clickSpine="onClickSpine"
-          ></component>
-          <!-- </KeepAlive> -->
+          <client-only>
+            <Grammar
+              v-if="tab === 0"
+              @expand="onExpand"
+              @clickSpine="onClickSpine"
+            ></Grammar>
+            <Vocab v-show="tab === 1"></Vocab>
+            <Tank
+              v-if="tab === 2"
+              @expand="onExpand"
+              @clickSpine="onClickSpine"
+            ></Tank>
+            <Game v-if="tab === 3"></Game>
+            <Kien
+              v-if="tab === 4"
+              @expand="onExpand"
+              @clickSpine="onClickSpine"
+            ></Kien>
+          </client-only>
         </div>
         <ul class="nav nav-pills mt-3">
           <li class="nav-item" @click="onChangeTab(0)">
@@ -44,6 +105,16 @@
           <li class="nav-item" @click="onChangeTab(2)">
             <a class="nav-link" :class="{ active: tab === 2 }" href="#">
               Tank
+            </a>
+          </li>
+          <li class="nav-item" @click="onChangeTab(3)">
+            <a class="nav-link" :class="{ active: tab === 3 }" href="#">
+              Game
+            </a>
+          </li>
+          <li class="nav-item" @click="onChangeTab(4)">
+            <a class="nav-link" :class="{ active: tab === 4 }" href="#">
+              Kien
             </a>
           </li>
         </ul>
@@ -67,6 +138,8 @@ const { data: res } = await useFetch("http://localhost:3002/rooms/test", {
   body: { userId: 1 },
 });
 
+// ------
+
 const mqttStore = useMqttStore();
 
 const mqttService = useMqttService();
@@ -77,15 +150,18 @@ let userId = ref("");
 let tab = ref(0);
 const isFullscreen = ref(false);
 
-let isOpenModal = ref(false);
+let selectedVocab = ref(null);
 
 const components = [
   defineAsyncComponent(() => import("~/components/Grammar.vue")),
   defineAsyncComponent(() => import("~/components/Vocab.vue")),
   defineAsyncComponent(() => import("~/components/Tank.vue")),
+  defineAsyncComponent(() => import("~/components/Kien.vue")),
 ];
 
 const { $mqtt, $bus } = useNuxtApp();
+
+// ------
 
 watch(
   () => mqttStore.isMqttConnected,
@@ -110,7 +186,10 @@ onMounted(() => {
     tab.value = m.tab;
   });
   $bus.$on("openVocabCard", (m: any) => {
-    openCard();
+    openCard(m.text);
+  });
+  $bus.$on("flipVocabCard", (m: any) => {
+    $bus.$emit('flip-vocab', m.text);
   });
 });
 
@@ -133,14 +212,28 @@ function onExpand(isExpand: boolean) {
 }
 
 function onClickSpine(d: any) {
-  if (d.target === "rock") {
-    mqttService.openVocabCard({});
-    openCard();
+  switch (d.target) {
+    case 'card_0':
+    mqttService.openVocabCard({ text: 'cat' });
+    openCard('cat');
+    break;
+    case 'card_1':
+    mqttService.openVocabCard({ text: 'tree' });
+    openCard('tree');
+    break;
+    case 'card_2':
+    mqttService.openVocabCard({ text: 'table' });
+    openCard('table');
+    break;
   }
 }
 
-function openCard() {
-  isOpenModal.value = true;
+function openCard(vocabName: string) {
+  selectedVocab.value = vocabName;
+}
+
+function syncFlip(vocabName: string) {
+    mqttService.flipVocabCard({ text: vocabName });
 }
 </script>
 

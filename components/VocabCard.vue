@@ -17,7 +17,7 @@
                   class="btn btn-light close"
                   data-dismiss="modal"
                   aria-label="Close"
-                  @click="$emit('close')"
+                  @click="closeVocab"
                 >
                   <span aria-hidden="true">&times;</span>
                 </button>
@@ -26,7 +26,13 @@
                 class="modal-body d-flex align-items-center"
                 @click="flipCard"
               >
-                <img class="img-fluid" src="~/assets/images/cat.jpeg" alt="" />
+                <slot name="image">
+                  <img
+                    class="img-fluid"
+                    src="~/assets/images/cat.jpeg"
+                    alt=""
+                  />
+                </slot>
               </div>
             </div>
           </div>
@@ -39,7 +45,7 @@
                   class="btn btn-light close"
                   data-dismiss="modal"
                   aria-label="Close"
-                  @click="$emit('close')"
+                  @click="closeVocab"
                 >
                   <span aria-hidden="true">&times;</span>
                 </button>
@@ -52,12 +58,12 @@
                   class="d-flex flex-column align-items-center justify-content-center text-dark text-center"
                 >
                   <h2 style="color: orange">
-                    <strong>CAT (NOUN)</strong>
+                    <strong>{{ props.name }}</strong>
                   </h2>
-                  <h4 style="margin-top: 4px">/cat/</h4>
-                  <h4 style="margin-top: 32px">CON MÈO</h4>
+                  <h4 style="margin-top: 4px">{{ props.proun }}</h4>
+                  <h4 style="margin-top: 32px">{{ props.meanvn }}</h4>
                   <h4 style="margin-top: 32px">
-                    I USUALLY KICK THE CAT WITH MY FEET.
+                    {{ props.example }}
                   </h4>
                 </div>
               </div>
@@ -71,13 +77,40 @@
 
 <script setup lang="ts">
 let isCardFlipped = ref(false);
+const props = defineProps(["vocab", "name", "proun", "meanvn", "example"]);
+
+const emit = defineEmits(["flip-card", "close"]);
+
+const { $mqtt, $bus } = useNuxtApp();
+
+onMounted(() => {
+  // $bus.$on("flip-vocab", (m: any) => {
+  //   if (m === props.vocab) {
+  //     isCardFlipped.value = !isCardFlipped.value;
+  //   }
+  // });
+});
+
 function flipCard(d: any) {
+  emit("flip-card", props.name);
   isCardFlipped.value = !isCardFlipped.value;
+}
+
+function closeVocab() {
+  emit("close");
 }
 </script>
 
 <style lang="scss">
 .modal-vocab-card {
+  background: rgba(0, 0, 0, 0.5);
+
+  .modal-dialog {
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
   .modal-content {
     max-width: 320px;
     min-height: 540px;
@@ -85,6 +118,8 @@ function flipCard(d: any) {
 }
 /* The flip card container - set the width and height to whatever you want. We have added the border property to demonstrate that the flip itself goes out of the box on hover (remove perspective if you don't want the 3D effect */
 .flip-card {
+  width: 320px;
+  min-height: 540px;
   background-color: transparent;
   //   border: 1px solid #f1f1f1;
   perspective: 1000px; /* Remove this if you don't want the 3D effect */

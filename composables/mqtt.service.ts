@@ -23,8 +23,8 @@ class MqttService {
     this.$mqtt.unsubscribe(`room/test/#`, {});
   }
 
-  sendMqttMessage(endpoint: string, data: any) {
-    this.$mqtt.send(endpoint, JSON.stringify(data), 0, false);
+  async sendMqttMessage(endpoint: string, data: any) {
+    if (this.$mqtt && (await this.isConnected())) this.$mqtt.send(endpoint, JSON.stringify(data), 0, false);
   }
 
   ping(data: any) {
@@ -41,6 +41,10 @@ class MqttService {
 
   openVocabCard(data: any) {
     this.sendMqttMessage("room/test/openVocabCard", data);
+  }
+
+  flipVocabCard(data: any) {
+    this.sendMqttMessage("room/test/flipVocabCard", data);
   }
 }
 

@@ -37,8 +37,8 @@ export default defineNuxtConfig({
     public: {
       BASE_URL: "$BASE_URL",
       BITU_BACKEND_URL: "$BITU_BACKEND_URL",
-      MQTT_HOST: "$MQTT_HOST",
-      MQTT_PORT: "$MQTT_PORT",
+      MQTT_HOST: 'localhost' || "$MQTT_HOST",
+      MQTT_PORT: '8083' || "$MQTT_PORT",
     },
   },
   build: {

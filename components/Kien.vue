@@ -1,6 +1,6 @@
 <template>
   <div
-    id="spineBitu"
+    id="spineTank"
     :class="{ fullscreen: isFullscreen, minimized: !isFullscreen }"
   >
     <div class="section-overlay">
@@ -10,44 +10,37 @@
         </button>
       </div>
     </div>
-    <canvas id="bitu" :style="{ width: '100%', height: '100%' }"></canvas>
+    <canvas id="kien" :style="{ width: '100%', height: '100%' }"></canvas>
   </div>
 </template>
 
 <script setup lang="ts">
 import { SpineCanvas } from "@esotericsoftware/spine-webgl";
-import { Train } from '~~/libs/TrainHead';
+import { Kien } from "~~/libs/Kien";
 
 let isFullscreen = ref(false);
 
 const emit = defineEmits(["expand", "click-spine"]);
 
 onMounted(() => {
-  new SpineCanvas(document.getElementById("bitu"), {
-    app: new Train({
-      callback: (boneName: string) => {
-        emit("click-spine", {
-          target: boneName,
-        });
-      },
+  new SpineCanvas(document.getElementById("kien"), {
+    app: new Kien({
+      callback: () => {},
     }),
   });
 });
 
 function expand() {
-    isFullscreen.value = !isFullscreen.value
-    emit('expand', isFullscreen.value)
+  isFullscreen.value = !isFullscreen.value;
+  emit("expand", isFullscreen.value);
 }
 </script>
 
 <style lang="scss">
-#spineBitu {
+#spineTank {
   position: absolute;
   top: 0;
   left: 0;
-  background-image: url('~/assets/spines/bg.png');
-  background-size: cover;
-
   &.fullscreen {
     width: 100vw;
     height: 100vh;
